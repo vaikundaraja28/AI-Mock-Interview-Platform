@@ -1,4 +1,19 @@
+# Environment
 .env
 venv/
+
+# Python
 __pycache__/
 *.pyc
+
+# Streamlit
+.streamlit/
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+
+# Uploads (optional if you don't want uploaded resumes in Git)
+uploads/
