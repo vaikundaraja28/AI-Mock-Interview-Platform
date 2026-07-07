@@ -30,10 +30,11 @@ initialize_session()
 if not st.session_state.logged_in:
 
     option = st.radio(
-        "",
-        ["Login", "Register"],
-        horizontal=True,
-        key="auth_option"
+    "Choose an option",
+    ["Login", "Register"],
+    horizontal=True,
+    label_visibility="collapsed"
+
     )
 
     st.write("")
