@@ -1,13 +1,14 @@
 import streamlit as st
 
-from core.theme import load_theme
 from database.database import initialize
+from core.theme import load_theme
 
-from components.hero import hero
-from components.features import features
-from components.stats import stats
-from components.actions import actions
-from components.footer import footer
+from auth.session import initialize_session
+from auth.login import login_page
+from auth.register import register_page
+
+from pages.dashboard import dashboard
+from resume.upload import upload_resume
 
 st.set_page_config(
     page_title="AI Mock Interview",
@@ -15,28 +16,51 @@ st.set_page_config(
     layout="wide"
 )
 
+# ----------------------------
+# Initialize
+# ----------------------------
+
 initialize()
+initialize_session()
+
+# ----------------------------
+# Login / Register
+# ----------------------------
+
+if not st.session_state.logged_in:
+
+    option = st.radio(
+        "",
+        ["Login", "Register"],
+        horizontal=True,
+        key="auth_option"
+    )
+
+    st.write("")
+
+    if option == "Login":
+        login_page()
+    else:
+        register_page()
+
+    st.stop()
+
+# ----------------------------
+# Logged In Area
+# ----------------------------
 
 load_theme()
 
-hero()
+page = st.session_state.page
 
-st.write("")
-st.write("")
+if page == "dashboard":
 
-stats()
+    dashboard()
 
-st.write("")
-st.write("")
+elif page == "resume":
 
-actions()
+    upload_resume()
 
-st.write("")
-st.write("")
+else:
 
-features()
-
-st.write("")
-st.write("")
-
-footer()
+    dashboard()

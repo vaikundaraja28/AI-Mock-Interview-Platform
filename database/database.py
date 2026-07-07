@@ -18,11 +18,13 @@ def initialize():
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        name TEXT,
+        name TEXT NOT NULL,
 
-        email TEXT UNIQUE,
+        email TEXT UNIQUE NOT NULL,
 
-        password TEXT
+        password TEXT NOT NULL,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
     )
     """)

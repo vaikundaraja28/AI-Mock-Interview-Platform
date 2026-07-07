@@ -4,19 +4,16 @@ import bcrypt
 DATABASE = "database/interview.db"
 
 
-def get_connection():
-    return sqlite3.connect(DATABASE)
-
-
 def register(name, email, password):
 
-    conn = get_connection()
+    conn = sqlite3.connect(DATABASE)
+
     cursor = conn.cursor()
 
     hashed = bcrypt.hashpw(
         password.encode(),
         bcrypt.gensalt()
-    ).decode()
+    )
 
     try:
 
@@ -28,28 +25,32 @@ def register(name, email, password):
             (
                 name,
                 email,
-                hashed
+                hashed.decode()
             )
         )
 
         conn.commit()
+
         return True
 
     except sqlite3.IntegrityError:
+
         return False
 
     finally:
+
         conn.close()
 
 
 def login(email, password):
 
-    conn = get_connection()
+    conn = sqlite3.connect(DATABASE)
+
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        SELECT id,name,email,password
+        SELECT id,name,password
         FROM users
         WHERE email=?
         """,
@@ -63,17 +64,15 @@ def login(email, password):
     if user is None:
         return None
 
-    stored_password = user[3]
-
     if bcrypt.checkpw(
         password.encode(),
-        stored_password.encode()
+        user[2].encode()
     ):
 
         return {
             "id": user[0],
             "name": user[1],
-            "email": user[2]
+            "email": email
         }
 
     return None
