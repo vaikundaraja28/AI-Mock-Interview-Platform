@@ -67,7 +67,10 @@ elif st.session_state.page == "interview":
 
     load_theme()
 
+
     interview_page()
+
+
 
 else:
 

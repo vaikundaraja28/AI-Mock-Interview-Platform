@@ -7,13 +7,13 @@ def generate_question(role, difficulty):
     prompt = f"""
 {SYSTEM_PROMPT}
 
-Role:
+Interview Role:
 {role}
 
 Difficulty:
 {difficulty}
 
-Generate only ONE interview question.
+Generate ONE interview question only.
 """
 
     return ask_gemini(prompt)

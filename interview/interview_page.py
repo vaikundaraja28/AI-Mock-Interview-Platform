@@ -1,6 +1,7 @@
 import streamlit as st
 
 from interview.interview_engine import generate_question
+from interview.evaluator import evaluate_answer
 
 
 def interview_page():
@@ -8,7 +9,7 @@ def interview_page():
     st.title("🎤 AI Mock Interview")
 
     role = st.selectbox(
-        "Choose Role",
+        "Choose Job Role",
         [
             "Python Developer",
             "Java Developer",
@@ -17,52 +18,74 @@ def interview_page():
             "Full Stack Developer",
             "Data Analyst",
             "Machine Learning Engineer"
-        ]
+        ],
+        key="role"
     )
 
     difficulty = st.selectbox(
-        "Difficulty",
+        "Choose Difficulty",
         [
             "Easy",
             "Medium",
             "Hard"
-        ]
+        ],
+        key="difficulty"
     )
 
     st.divider()
 
     if st.button(
-        "🚀 Start Interview",
+        "🚀 Generate Question",
+        key="generate_question",
         use_container_width=True
     ):
 
-        question = generate_question(
-            role,
-            difficulty
-        )
+        question = generate_question(role, difficulty)
 
-        st.session_state.question = question
+        if question.startswith("ERROR"):
+
+            st.error(question)
+
+        else:
+
+            st.session_state.question = question
+            st.session_state.candidate_answer = ""
+
+            st.rerun()
 
     if "question" in st.session_state:
 
-        st.success("Question Generated")
-
-        st.markdown("### 💬 Interview Question")
+        st.subheader("💬 Interview Question")
 
         st.info(st.session_state.question)
 
-        answer = st.text_area(
+        st.text_area(
             "Your Answer",
-            height=250
+            key="candidate_answer",
+            height=200
         )
 
         if st.button(
-            "Submit Answer",
+            "✅ Evaluate Answer",
+            key="evaluate_answer",
             use_container_width=True
         ):
 
-            st.success("Answer submitted!")
+            answer = st.session_state.candidate_answer.strip()
 
-            st.info(
-                "AI Evaluation will be added in the next phase."
-            )
+            if answer == "":
+
+                st.warning("Please enter your answer first.")
+
+            else:
+
+                with st.spinner("🤖 AI is evaluating your answer..."):
+
+                    result = evaluate_answer(
+                        st.session_state.question,
+                        answer
+                    )
+
+                st.subheader("📊 AI Evaluation")
+
+                st.markdown(result)
