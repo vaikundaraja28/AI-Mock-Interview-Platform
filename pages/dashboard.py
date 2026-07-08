@@ -38,11 +38,13 @@ def dashboard():
     with col1:
 
         if st.button(
-            "🚀 Start Interview",
-            use_container_width=True
-        ):
-            st.session_state.page = "interview"
-            st.rerun()
+    "🚀 Start Interview",
+    use_container_width=True
+):
+         st.session_state.page = "interview"
+         st.rerun()
+         st.session_state.page = "interview"
+         st.rerun()
 
     with col2:
 
