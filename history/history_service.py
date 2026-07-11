@@ -74,3 +74,28 @@ def get_history(user_id):
     conn.close()
 
     return rows
+
+
+def get_statistics(user_id):
+
+    conn = sqlite3.connect(DATABASE)
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*),
+            AVG(score),
+            MAX(score)
+        FROM interviews
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    )
+
+    stats = cursor.fetchone()
+
+    conn.close()
+
+    return stats

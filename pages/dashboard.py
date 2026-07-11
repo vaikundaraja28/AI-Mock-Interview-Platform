@@ -1,5 +1,5 @@
 import streamlit as st
-
+from history.history_service import get_statistics
 
 def dashboard():
 
@@ -8,17 +8,33 @@ def dashboard():
     st.write(f"Welcome back, **{st.session_state.user['name']}** 👋")
 
     st.write("")
+    stats = get_statistics(
+    st.session_state.user["id"]
+)
+
+    interviews = stats[0] or 0
+    average = stats[1] or 0
+    highest = stats[2] or 0
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.metric("Interviews", "0")
+     st.metric(
+        "Interviews",
+        interviews
+    )
 
     with c2:
-        st.metric("Average Score", "--")
+     st.metric(
+        "Average Score",
+        f"{average:.1f}/10"
+    )
 
     with c3:
-        st.metric("Rank", "--")
+     st.metric(
+        "Highest Score",
+        f"{highest}/10"
+    )
 
     st.divider()
 
