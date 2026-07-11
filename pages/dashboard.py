@@ -24,7 +24,7 @@ def dashboard():
 
     st.subheader("Quick Actions")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
 
@@ -44,4 +44,12 @@ def dashboard():
             key="upload_resume"
         ):
             st.session_state.page = "resume"
+            st.rerun()
+    with col3:
+
+        if st.button(
+        "📜 Interview History",
+        use_container_width=True
+        ):
+            st.session_state.page = "history"
             st.rerun()

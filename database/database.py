@@ -29,6 +29,32 @@ def initialize():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS interviews(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    user_id INTEGER NOT NULL,
+
+    role TEXT,
+
+    difficulty TEXT,
+
+    question TEXT,
+
+    answer TEXT,
+
+    evaluation TEXT,
+
+    score INTEGER,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY(user_id) REFERENCES users(id)
+
+)
+""")
+
     conn.commit()
 
     conn.close()

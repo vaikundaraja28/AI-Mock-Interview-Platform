@@ -10,6 +10,7 @@ from auth.register import register_page
 from pages.dashboard import dashboard
 from resume.upload import upload_resume
 from interview.interview_page import interview_page
+from history.history_page import history_page
 
 st.set_page_config(
     page_title="AI Mock Interview",
@@ -63,14 +64,13 @@ elif page == "resume":
 
     upload_resume()
 
-elif st.session_state.page == "interview":
-
-    load_theme()
-
+elif page == "interview":
 
     interview_page()
 
+elif page == "history":
 
+    history_page()
 
 else:
 

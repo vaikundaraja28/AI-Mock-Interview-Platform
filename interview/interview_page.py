@@ -3,6 +3,9 @@ import streamlit as st
 from interview.interview_engine import generate_question
 from interview.evaluator import evaluate_answer
 
+from history.history_service import save_interview
+from utils.score_parser import extract_score
+
 
 def interview_page():
 
@@ -85,6 +88,18 @@ def interview_page():
                         st.session_state.question,
                         answer
                     )
+
+                score = extract_score(result)
+
+                save_interview(
+                    user_id=st.session_state.user["id"],
+                    role=role,
+                    difficulty=difficulty,
+                    question=st.session_state.question,
+                    answer=answer,
+                    evaluation=result,
+                    score=score
+                )
 
                 st.subheader("📊 AI Evaluation")
 
