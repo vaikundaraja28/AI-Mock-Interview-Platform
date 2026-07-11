@@ -99,3 +99,28 @@ def get_statistics(user_id):
     conn.close()
 
     return stats
+
+
+def get_interview(interview_id):
+
+    conn = sqlite3.connect(DATABASE)
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            question,
+            answer,
+            evaluation
+        FROM interviews
+        WHERE id = ?
+        """,
+        (interview_id,)
+    )
+
+    interview = cursor.fetchone()
+
+    conn.close()
+
+    return interview
