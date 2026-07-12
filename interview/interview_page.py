@@ -6,6 +6,8 @@ from interview.evaluator import evaluate_answer
 from history.history_service import save_interview
 from utils.score_parser import extract_score
 
+from reports.pdf_report import generate_report
+
 
 def interview_page():
 
@@ -54,6 +56,12 @@ def interview_page():
             st.session_state.question = question
             st.session_state.candidate_answer = ""
 
+            # Clear previous evaluation
+            st.session_state.pop("last_evaluation", None)
+            st.session_state.pop("last_score", None)
+            st.session_state.pop("last_role", None)
+            st.session_state.pop("last_difficulty", None)
+
             st.rerun()
 
     if "question" in st.session_state:
@@ -101,6 +109,40 @@ def interview_page():
                     score=score
                 )
 
-                st.subheader("📊 AI Evaluation")
+                st.session_state.last_evaluation = result
+                st.session_state.last_score = score
+                st.session_state.last_role = role
+                st.session_state.last_difficulty = difficulty
 
-                st.markdown(result)
+        if "last_evaluation" in st.session_state:
+
+            st.subheader("📊 AI Evaluation")
+            st.markdown(st.session_state.last_evaluation)
+
+            st.divider()
+
+            if st.button(
+                "📄 Generate PDF Report",
+                use_container_width=True
+            ):
+
+                filename = "Interview_Report.pdf"
+
+                generate_report(
+                    filename=filename,
+                    user=st.session_state.user["name"],
+                    role=st.session_state.last_role,
+                    difficulty=st.session_state.last_difficulty,
+                    question=st.session_state.question,
+                    answer=st.session_state.candidate_answer,
+                    evaluation=st.session_state.last_evaluation
+                )
+
+                with open(filename, "rb") as pdf:
+
+                    st.download_button(
+                        "⬇ Download Interview Report",
+                        data=pdf,
+                        file_name=filename,
+                        mime="application/pdf"
+                    )
