@@ -45,7 +45,11 @@ def interview_page():
         use_container_width=True
     ):
 
-        question = generate_question(role, difficulty)
+        question = generate_question(
+        role,
+        difficulty,
+        st.session_state.get("resume_text")
+    )
 
         if question.startswith("ERROR"):
 

@@ -31,6 +31,8 @@ def upload_resume():
 
                 text = extract_pdf_text(uploaded)
 
+                st.session_state.resume_text = text
+
                 analyze_resume(text)
 
         else:
