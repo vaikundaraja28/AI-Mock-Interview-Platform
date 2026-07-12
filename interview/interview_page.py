@@ -7,8 +7,7 @@ from history.history_service import save_interview
 from utils.score_parser import extract_score
 from reports.pdf_report import generate_report
 
-from voice.speech_to_text import listen
-
+from streamlit_mic_recorder import speech_to_text
 
 def interview_page():
 
@@ -26,7 +25,7 @@ def interview_page():
         st.session_state.scores = []
 
     if "candidate_answer" not in st.session_state:
-        st.session_state.candidate_answer = ""
+        st.session_state.pop("candidate_answer", None)
 
     # -------------------------
     # Page Title
@@ -76,6 +75,13 @@ def interview_page():
         key="difficulty"
     )
 
+    question_count = st.selectbox(
+    "Number of Questions",
+    [3, 5, 10],
+    index=1,
+    key="question_count"
+    )
+
     st.divider()
 
     # -------------------------
@@ -87,6 +93,10 @@ def interview_page():
         key="generate_question",
         use_container_width=True
     ):
+        
+        st.session_state.total_questions = question_count
+        st.session_state.current_question = 1
+        st.session_state.scores = []
 
         question = generate_question(
             role,
@@ -122,7 +132,7 @@ def interview_page():
                 None
             )
 
-            st.session_state.candidate_answer = ""
+            st.session_state.pop("candidate_answer", None)
 
             st.rerun()
 
@@ -138,35 +148,34 @@ def interview_page():
             st.session_state.question
         )
 
-        st.text_area(
-            "Your Answer",
-            key="candidate_answer",
-            height=200
-        )
+        answer = st.text_area(
+             "Your Answer",
+             value=st.session_state.get(
+                 "voice_answer",
+                 st.session_state.get("candidate_answer", "")
+             ),
+             height=200
+         )
 
-            # -------------------------
+        # -------------------------
         # Voice Input
         # -------------------------
 
-        if st.button(
-            "🎤 Speak Answer",
-            use_container_width=True
-        ):
+        st.write("### 🎤 Voice Answer")
 
-            with st.spinner("🎤 Listening..."):
+        voice_text = speech_to_text(
+            language="en",
+            start_prompt="🎤 Start Recording",
+            stop_prompt="⏹ Stop Recording",
+            just_once=True,
+            use_container_width=True,
+            key="voice_input"
+        )
 
-                text = listen()
+        if voice_text:
 
-            if text.startswith("ERROR"):
-
-                st.error(text)
-
-            else:
-
-                st.session_state.candidate_answer = text
-
-                st.rerun()
-
+            st.session_state.voice_answer = voice_text
+            st.rerun()
         # -------------------------
         # Evaluate Answer
         # -------------------------
@@ -196,7 +205,7 @@ def interview_page():
 
                     result = evaluate_answer(
                         st.session_state.question,
-                        answer
+                        answer = answer.strip()
                     )
 
                 score = extract_score(result)
@@ -278,7 +287,7 @@ def interview_page():
                             None
                         )
 
-                        st.session_state.candidate_answer = ""
+                        st.session_state.pop("candidate_answer", None)
 
                         st.rerun()
 
