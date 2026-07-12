@@ -7,22 +7,50 @@ from history.history_service import save_interview
 from utils.score_parser import extract_score
 from reports.pdf_report import generate_report
 
+from voice.speech_to_text import listen
+
 
 def interview_page():
+
+    # -------------------------
+    # Initialize Session State
+    # -------------------------
+
+    if "current_question" not in st.session_state:
+        st.session_state.current_question = 1
+
+    if "total_questions" not in st.session_state:
+        st.session_state.total_questions = 5
+
+    if "scores" not in st.session_state:
+        st.session_state.scores = []
+
+    if "candidate_answer" not in st.session_state:
+        st.session_state.candidate_answer = ""
+
+    # -------------------------
+    # Page Title
+    # -------------------------
 
     st.title("🎤 AI Mock Interview")
 
     st.progress(
-        st.session_state.current_question /
-        st.session_state.total_questions
+        st.session_state.current_question
+        / st.session_state.total_questions
     )
 
     st.write(
-        f"### Question {st.session_state.current_question} of "
+        f"### Question "
+        f"{st.session_state.current_question}"
+        f" of "
         f"{st.session_state.total_questions}"
     )
 
     st.divider()
+
+    # -------------------------
+    # Role Selection
+    # -------------------------
 
     role = st.selectbox(
         "Choose Job Role",
@@ -74,13 +102,27 @@ def interview_page():
 
             st.session_state.question = question
 
-            # Remove old answer safely
-            st.session_state.pop("candidate_answer", None)
+            st.session_state.pop(
+                "last_evaluation",
+                None
+            )
 
-            st.session_state.pop("last_evaluation", None)
-            st.session_state.pop("last_score", None)
-            st.session_state.pop("last_role", None)
-            st.session_state.pop("last_difficulty", None)
+            st.session_state.pop(
+                "last_score",
+                None
+            )
+
+            st.session_state.pop(
+                "last_role",
+                None
+            )
+
+            st.session_state.pop(
+                "last_difficulty",
+                None
+            )
+
+            st.session_state.candidate_answer = ""
 
             st.rerun()
 
@@ -92,7 +134,9 @@ def interview_page():
 
         st.subheader("💬 Interview Question")
 
-        st.info(st.session_state.question)
+        st.info(
+            st.session_state.question
+        )
 
         st.text_area(
             "Your Answer",
@@ -100,8 +144,31 @@ def interview_page():
             height=200
         )
 
+            # -------------------------
+        # Voice Input
         # -------------------------
-        # Evaluate
+
+        if st.button(
+            "🎤 Speak Answer",
+            use_container_width=True
+        ):
+
+            with st.spinner("🎤 Listening..."):
+
+                text = listen()
+
+            if text.startswith("ERROR"):
+
+                st.error(text)
+
+            else:
+
+                st.session_state.candidate_answer = text
+
+                st.rerun()
+
+        # -------------------------
+        # Evaluate Answer
         # -------------------------
 
         if st.button(
@@ -110,15 +177,22 @@ def interview_page():
             use_container_width=True
         ):
 
-            answer = st.session_state.candidate_answer.strip()
+            answer = (
+                st.session_state.candidate_answer
+                .strip()
+            )
 
             if answer == "":
 
-                st.warning("Please enter your answer first.")
+                st.warning(
+                    "Please enter your answer first."
+                )
 
             else:
 
-                with st.spinner("🤖 AI is evaluating your answer..."):
+                with st.spinner(
+                    "🤖 AI is evaluating your answer..."
+                ):
 
                     result = evaluate_answer(
                         st.session_state.question,
@@ -127,7 +201,9 @@ def interview_page():
 
                 score = extract_score(result)
 
-                st.session_state.scores.append(score)
+                st.session_state.scores.append(
+                    score
+                )
 
                 save_interview(
                     user_id=st.session_state.user["id"],
@@ -152,10 +228,15 @@ def interview_page():
 
         if "last_evaluation" in st.session_state:
 
-            st.subheader("📊 AI Evaluation")
-            st.markdown(st.session_state.last_evaluation)
+            st.subheader(
+                "📊 AI Evaluation"
+            )
 
-            # -------------------------
+            st.markdown(
+                st.session_state.last_evaluation
+            )
+
+                    # -------------------------
             # Next Question
             # -------------------------
 
@@ -174,24 +255,51 @@ def interview_page():
                     question = generate_question(
                         role,
                         difficulty,
-                        st.session_state.get("resume_text")
+                        st.session_state.get(
+                            "resume_text"
+                        )
                     )
 
-                    st.session_state.question = question
+                    if question.startswith("ERROR"):
 
-                    st.session_state.pop("candidate_answer", None)
-                    st.session_state.pop("last_evaluation", None)
-                    st.session_state.pop("last_score", None)
+                        st.error(question)
 
-                    st.rerun()
+                    else:
+
+                        st.session_state.question = question
+
+                        st.session_state.pop(
+                            "last_evaluation",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "last_score",
+                            None
+                        )
+
+                        st.session_state.candidate_answer = ""
+
+                        st.rerun()
+
+            # -------------------------
+            # Interview Completed
+            # -------------------------
 
             else:
 
-                st.success("🎉 Interview Completed!")
+                st.success(
+                    "🎉 Interview Completed!"
+                )
 
                 average = (
-                    sum(st.session_state.scores)
-                    / len(st.session_state.scores)
+                    sum(
+                        st.session_state.scores
+                    )
+                    /
+                    len(
+                        st.session_state.scores
+                    )
                     if st.session_state.scores
                     else 0
                 )
@@ -216,14 +324,14 @@ def interview_page():
                         role=st.session_state.last_role,
                         difficulty=st.session_state.last_difficulty,
                         question=st.session_state.question,
-                        answer=st.session_state.get(
-                            "candidate_answer",
-                            ""
-                        ),
+                        answer=st.session_state.candidate_answer,
                         evaluation=st.session_state.last_evaluation
                     )
 
-                    with open(filename, "rb") as pdf:
+                    with open(
+                        filename,
+                        "rb"
+                    ) as pdf:
 
                         st.download_button(
                             "⬇ Download Interview Report",
@@ -238,14 +346,38 @@ def interview_page():
                 ):
 
                     st.session_state.current_question = 1
+
                     st.session_state.scores = []
 
-                    st.session_state.pop("question", None)
-                    st.session_state.pop("candidate_answer", None)
-                    st.session_state.pop("last_evaluation", None)
-                    st.session_state.pop("last_score", None)
-                    st.session_state.pop("last_role", None)
-                    st.session_state.pop("last_difficulty", None)
+                    st.session_state.pop(
+                        "question",
+                        None
+                    )
+
+                    st.session_state.pop(
+                        "candidate_answer",
+                        None
+                    )
+
+                    st.session_state.pop(
+                        "last_evaluation",
+                        None
+                    )
+
+                    st.session_state.pop(
+                        "last_score",
+                        None
+                    )
+
+                    st.session_state.pop(
+                        "last_role",
+                        None
+                    )
+
+                    st.session_state.pop(
+                        "last_difficulty",
+                        None
+                    )
 
                     st.session_state.page = "dashboard"
 
