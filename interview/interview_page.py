@@ -24,8 +24,8 @@ def interview_page():
     if "scores" not in st.session_state:
         st.session_state.scores = []
 
-    if "candidate_answer" not in st.session_state:
-        st.session_state.pop("candidate_answer", None)
+    if "voice_answer" not in st.session_state:
+        st.session_state.voice_answer = ""
 
     # -------------------------
     # Page Title
@@ -186,10 +186,7 @@ def interview_page():
             use_container_width=True
         ):
 
-            answer = (
-                st.session_state.candidate_answer
-                .strip()
-            )
+            answer = answer.strip()
 
             if answer == "":
 
@@ -204,9 +201,9 @@ def interview_page():
                 ):
 
                     result = evaluate_answer(
-                        st.session_state.question,
-                        answer = answer.strip()
-                    )
+                         st.session_state.question,
+                         answer
+                     )
 
                 score = extract_score(result)
 
@@ -333,7 +330,7 @@ def interview_page():
                         role=st.session_state.last_role,
                         difficulty=st.session_state.last_difficulty,
                         question=st.session_state.question,
-                        answer=st.session_state.candidate_answer,
+                        answer=answer,
                         evaluation=st.session_state.last_evaluation
                     )
 
@@ -358,10 +355,7 @@ def interview_page():
 
                     st.session_state.scores = []
 
-                    st.session_state.pop(
-                        "question",
-                        None
-                    )
+                    st.session_state.voice_answer = ""
 
                     st.session_state.pop(
                         "candidate_answer",
