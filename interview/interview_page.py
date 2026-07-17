@@ -1,6 +1,9 @@
 import streamlit as st
 
-from interview.interview_engine import generate_question
+from interview.interview_engine import (
+    generate_question,
+    generate_followup_question
+)
 from interview.evaluator import evaluate_answer
 
 from history.history_service import save_interview
@@ -26,6 +29,9 @@ def interview_page():
 
     if "voice_answer" not in st.session_state:
         st.session_state.voice_answer = ""
+
+    if "followup_question" not in st.session_state:
+        st.session_state.followup_question = None
 
     # -------------------------
     # Page Title
@@ -221,9 +227,21 @@ def interview_page():
                 ):
 
                     result = evaluate_answer(
-                         st.session_state.question,
-                         answer
-                     )
+                        st.session_state.question,
+                        answer
+                    )
+
+                    followup_question = generate_followup_question(
+                        role=role,
+                        difficulty=difficulty,
+                        company=company,
+                        previous_question=st.session_state.question,
+                        candidate_answer=answer
+                    )
+
+                    st.session_state.followup_question = followup_question
+
+                    score = extract_score(result)
 
                 score = extract_score(result)
 
@@ -262,8 +280,15 @@ def interview_page():
             st.markdown(
                 st.session_state.last_evaluation
             )
+            
+            if st.session_state.followup_question:
 
-                    # -------------------------
+               st.divider()
+
+               st.subheader("🤖 AI Follow-up Question")
+
+               st.info(st.session_state.followup_question)
+            # -------------------------
             # Next Question
             # -------------------------
 

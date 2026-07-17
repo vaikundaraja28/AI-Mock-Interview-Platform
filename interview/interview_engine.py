@@ -83,3 +83,46 @@ Return ONLY the question.
      """
 
     return ask_gemini(prompt)
+
+def generate_followup_question(
+    role,
+    difficulty,
+    company,
+    previous_question,
+    candidate_answer
+):
+    prompt = f"""
+{SYSTEM_PROMPT}
+
+You are an experienced technical interviewer.
+
+Role:
+{role}
+
+Company:
+{company}
+
+Difficulty:
+{difficulty}
+
+Previous Question:
+{previous_question}
+
+Candidate Answer:
+{candidate_answer}
+
+Your task:
+
+Generate ONE natural follow-up interview question based ONLY on the candidate's previous answer.
+
+Rules:
+
+- Ask only ONE question.
+- It must relate directly to the candidate's answer.
+- Make it feel like a real interviewer continuing the conversation.
+- Do NOT repeat the previous question.
+- Do NOT change the topic completely.
+- Return ONLY the follow-up question.
+"""
+
+    return ask_gemini(prompt)
