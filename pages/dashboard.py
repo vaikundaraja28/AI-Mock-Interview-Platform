@@ -114,6 +114,7 @@ def dashboard():
                 "Difficulty",
                 "Score",
                 "Question",
+                "Company",
                 "Date"
             ]
         )
@@ -131,6 +132,7 @@ def dashboard():
             hover_data=[
                 "Role",
                 "Difficulty",
+                "Company",
                 "Question",
                 "Date"
             ],
@@ -169,6 +171,7 @@ def dashboard():
             columns=[
                 "Role",
                 "Difficulty",
+                "Company",
                 "Score",
                 "Date"
             ]

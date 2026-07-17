@@ -2,7 +2,7 @@ from services.gemini_service import ask_gemini
 from interview.prompt import SYSTEM_PROMPT
 
 
-def generate_question(role, difficulty, resume_text=None):
+def generate_question(role, difficulty,company, resume_text=None):
 
     if resume_text:
 
@@ -15,10 +15,13 @@ Candidate is applying for:
 
 {role}
 
+Target Company:
+
+{company}
+
 Difficulty:
 
 {difficulty}
-
 =========================
 CANDIDATE RESUME
 =========================
@@ -56,18 +59,27 @@ Return ONLY the question.
 
     else:
 
-        prompt = f"""
-{SYSTEM_PROMPT}
+     prompt = f"""
+     {SYSTEM_PROMPT}
 
-Candidate Role:
-{role}
+     You are an experienced technical interviewer.
 
-Difficulty:
-{difficulty}
+     Target Company:
+     {company}
 
-Generate EXACTLY ONE interview question.
+     Candidate Role:
+     {role}
 
-Return ONLY the question.
-"""
+     Difficulty:
+     {difficulty}
+
+     Generate EXACTLY ONE interview question.
+
+     If the company is General, generate a normal interview question.
+
+     Otherwise, generate a question that matches the interview style of {company}.
+
+     Return ONLY the question.
+     """
 
     return ask_gemini(prompt)

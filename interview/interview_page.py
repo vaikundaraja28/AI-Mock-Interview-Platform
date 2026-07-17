@@ -75,6 +75,26 @@ def interview_page():
         key="difficulty"
     )
 
+    company = st.selectbox(
+        "Target Company",
+       [
+          "General",
+          "Google",
+          "Microsoft",
+          "Amazon",
+          "Meta",
+          "Apple",
+          "Netflix",
+          "TCS",
+          "Infosys",
+          "Wipro",
+          "Accenture",
+          "Cognizant",
+          "Capgemini"
+        ],
+        key="company"
+    )
+
     question_count = st.selectbox(
     "Number of Questions",
     [3, 5, 10],
@@ -215,6 +235,7 @@ def interview_page():
                     user_id=st.session_state.user["id"],
                     role=role,
                     difficulty=difficulty,
+                    company=company,
                     question=st.session_state.question,
                     answer=answer,
                     evaluation=result,
@@ -261,6 +282,7 @@ def interview_page():
                     question = generate_question(
                         role,
                         difficulty,
+                        company,
                         st.session_state.get(
                             "resume_text"
                         )

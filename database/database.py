@@ -39,6 +39,8 @@ def initialize():
     role TEXT,
 
     difficulty TEXT,
+                   
+    company TEXT,
 
     question TEXT,
 

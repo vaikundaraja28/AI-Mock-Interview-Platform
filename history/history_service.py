@@ -7,6 +7,7 @@ def save_interview(
     user_id,
     role,
     difficulty,
+    company,
     question,
     answer,
     evaluation,
@@ -24,18 +25,20 @@ def save_interview(
             user_id,
             role,
             difficulty,
+            company,
             question,
             answer,
             evaluation,
             score
         )
         VALUES
-        (?, ?, ?, ?, ?, ?, ?)
+        (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             user_id,
             role,
             difficulty,
+            company,
             question,
             answer,
             evaluation,
@@ -60,6 +63,7 @@ def get_history(user_id):
             id,
             role,
             difficulty,
+            company,
             score,
             created_at
         FROM interviews
@@ -138,6 +142,7 @@ def get_scores(user_id):
             difficulty,
             score,
             question,
+            company,
             created_at
         FROM interviews
         WHERE user_id = ?
@@ -163,6 +168,7 @@ def get_dashboard_data(user_id):
         SELECT
             role,
             difficulty,
+            company,
             score,
             created_at
         FROM interviews
