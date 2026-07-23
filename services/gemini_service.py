@@ -1,19 +1,28 @@
-import google.generativeai as genai
+from groq import Groq
 
-from config import GEMINI_API_KEY
+from config import GROQ_API_KEY
 
-genai.configure(api_key=GEMINI_API_KEY)
 
-model = genai.GenerativeModel("gemini-2.5-flash")
+client = Groq(
+    api_key=GROQ_API_KEY
+)
 
 
 def ask_gemini(prompt):
 
     try:
 
-        response = model.generate_content(prompt)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
 
-        return response.text
+        return response.choices[0].message.content
 
     except Exception as e:
 

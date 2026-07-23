@@ -175,13 +175,10 @@ def interview_page():
         )
 
         answer = st.text_area(
-             "Your Answer",
-             value=st.session_state.get(
-                 "voice_answer",
-                 st.session_state.get("candidate_answer", "")
-             ),
-             height=200
-         )
+            "Your Answer",
+            key="candidate_answer",
+            height=200
+        )
 
         # -------------------------
         # Voice Input
@@ -200,7 +197,8 @@ def interview_page():
 
         if voice_text:
 
-            st.session_state.voice_answer = voice_text
+            st.session_state.candidate_answer = voice_text
+            
             st.rerun()
         # -------------------------
         # Evaluate Answer
@@ -283,12 +281,53 @@ def interview_page():
             
             if st.session_state.followup_question:
 
-               st.divider()
+                st.divider()
 
-               st.subheader("🤖 AI Follow-up Question")
+                st.subheader("🤖 AI Follow-up Question")
 
-               st.info(st.session_state.followup_question)
-            # -------------------------
+                st.info(st.session_state.followup_question)
+
+                followup_answer = st.text_area(
+                "Your Follow-up Answer",
+                key="followup_answer",
+                height=150
+                )
+
+                if st.button(
+                   "✅ Evaluate Follow-up",
+                   key="evaluate_followup",
+                   use_container_width=True
+                ):
+
+                   if followup_answer.strip() == "":
+
+                       st.warning(
+                       "Please answer the follow-up question."
+                       )
+
+                   else:
+
+                     with st.spinner(
+                         "🤖 AI is evaluating your follow-up..."
+                     ):
+
+                         followup_result = evaluate_answer(
+                         st.session_state.followup_question,
+                         followup_answer
+                         )
+
+                     st.session_state.followup_evaluation = followup_result
+
+                     st.rerun()
+
+                if "followup_evaluation" in st.session_state:
+
+                     st.success("✅ Follow-up Evaluated")
+
+                     st.markdown(
+                         st.session_state.followup_evaluation
+                     )
+                        # -------------------------
             # Next Question
             # -------------------------
 
@@ -297,29 +336,181 @@ def interview_page():
                 < st.session_state.total_questions
             ):
 
-                if st.button(
-                    "➡ Next Question",
-                    use_container_width=True
-                ):
+                if "followup_evaluation" in st.session_state:
 
-                    st.session_state.current_question += 1
+                    if st.button(
+                        "➡ Next Question",
+                        use_container_width=True
+                    ):
 
-                    question = generate_question(
-                        role,
-                        difficulty,
-                        company,
-                        st.session_state.get(
-                            "resume_text"
+                        st.session_state.current_question += 1
+
+                        question = generate_question(
+                            role,
+                            difficulty,
+                            company,
+                            st.session_state.get(
+                                "resume_text"
+                            )
                         )
+
+                        if question.startswith("ERROR"):
+
+                            st.error(
+                                question
+                            )
+
+                        else:
+
+                            st.session_state.question = question
+
+                            st.session_state.pop(
+                                "last_evaluation",
+                                None
+                            )
+
+                            st.session_state.pop(
+                                "last_score",
+                                None
+                            )
+
+                            st.session_state.pop(
+                                "followup_question",
+                                None
+                            )
+
+                            st.session_state.pop(
+                                "followup_answer",
+                                None
+                            )
+
+                            st.session_state.pop(
+                                "followup_evaluation",
+                                None
+                            )
+
+                            st.session_state.pop(
+                                "candidate_answer",
+                                None
+                            )
+
+                            st.session_state.candidate_answer = ""
+
+                            st.session_state.voice_answer = ""
+
+                            st.rerun()
+
+                else:
+
+                    st.info(
+                        "Please evaluate the follow-up question before continuing."
                     )
 
-                    if question.startswith("ERROR"):
 
-                        st.error(question)
+            # -------------------------
+            # Interview Completed
+            # -------------------------
 
-                    else:
+            else:
 
-                        st.session_state.question = question
+                if "followup_evaluation" in st.session_state:
+
+                    st.success(
+                        "🎉 Interview Completed!"
+                    )
+
+                    average = (
+                        sum(
+                            st.session_state.scores
+                        )
+                        /
+                        len(
+                            st.session_state.scores
+                        )
+                        if st.session_state.scores
+                        else 0
+                    )
+
+                    st.metric(
+                        "⭐ Final Average Score",
+                        f"{average:.1f}/10"
+                    )
+
+                    st.divider()
+
+                    # -------------------------
+                    # Generate PDF Report
+                    # -------------------------
+
+                    if st.button(
+                        "📄 Generate PDF Report",
+                        use_container_width=True
+                    ):
+
+                        filename = "Interview_Report.pdf"
+
+                        generate_report(
+                            filename=filename,
+                            user=st.session_state.user["name"],
+                            role=st.session_state.last_role,
+                            difficulty=st.session_state.last_difficulty,
+                            company=company,
+                            question=st.session_state.question,
+                            answer=st.session_state.candidate_answer,
+                            evaluation=st.session_state.last_evaluation,
+                            overall_score=average,
+                            followup_question=st.session_state.followup_question,
+                            followup_answer=st.session_state.get(
+                                "followup_answer",
+                                "Not Available"
+                            ),
+                            followup_evaluation=st.session_state.get(
+                                "followup_evaluation",
+                                "Not Available"
+                            )
+                        )
+
+                        st.success(
+                            "✅ PDF report generated successfully!"
+                        )
+
+                        with open(
+                            filename,
+                            "rb"
+                        ) as pdf:
+
+                            st.download_button(
+                                "⬇ Download Interview Report",
+                                data=pdf,
+                                file_name=filename,
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+
+                    # -------------------------
+                    # Finish Interview
+                    # -------------------------
+
+                    if st.button(
+                        "🏠 Finish Interview",
+                        use_container_width=True
+                    ):
+
+                        st.session_state.current_question = 1
+
+                        st.session_state.scores = []
+
+                        st.session_state.voice_answer = ""
+
+                        st.session_state.pop(
+                            "question",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "candidate_answer",
+                            None
+                        )
 
                         st.session_state.pop(
                             "last_evaluation",
@@ -331,104 +522,37 @@ def interview_page():
                             None
                         )
 
-                        st.session_state.pop("candidate_answer", None)
+                        st.session_state.pop(
+                            "last_role",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "last_difficulty",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "followup_question",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "followup_answer",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "followup_evaluation",
+                            None
+                        )
+
+                        st.session_state.page = "dashboard"
 
                         st.rerun()
 
-            # -------------------------
-            # Interview Completed
-            # -------------------------
+                else:
 
-            else:
-
-                st.success(
-                    "🎉 Interview Completed!"
-                )
-
-                average = (
-                    sum(
-                        st.session_state.scores
+                    st.info(
+                        "Please evaluate the follow-up question to complete the interview."
                     )
-                    /
-                    len(
-                        st.session_state.scores
-                    )
-                    if st.session_state.scores
-                    else 0
-                )
-
-                st.metric(
-                    "⭐ Final Average Score",
-                    f"{average:.1f}/10"
-                )
-
-                st.divider()
-
-                if st.button(
-                    "📄 Generate PDF Report",
-                    use_container_width=True
-                ):
-
-                    filename = "Interview_Report.pdf"
-
-                    generate_report(
-                        filename=filename,
-                        user=st.session_state.user["name"],
-                        role=st.session_state.last_role,
-                        difficulty=st.session_state.last_difficulty,
-                        question=st.session_state.question,
-                        answer=answer,
-                        evaluation=st.session_state.last_evaluation
-                    )
-
-                    with open(
-                        filename,
-                        "rb"
-                    ) as pdf:
-
-                        st.download_button(
-                            "⬇ Download Interview Report",
-                            data=pdf,
-                            file_name=filename,
-                            mime="application/pdf"
-                        )
-
-                if st.button(
-                    "🏠 Finish Interview",
-                    use_container_width=True
-                ):
-
-                    st.session_state.current_question = 1
-
-                    st.session_state.scores = []
-
-                    st.session_state.voice_answer = ""
-
-                    st.session_state.pop(
-                        "candidate_answer",
-                        None
-                    )
-
-                    st.session_state.pop(
-                        "last_evaluation",
-                        None
-                    )
-
-                    st.session_state.pop(
-                        "last_score",
-                        None
-                    )
-
-                    st.session_state.pop(
-                        "last_role",
-                        None
-                    )
-
-                    st.session_state.pop(
-                        "last_difficulty",
-                        None
-                    )
-
-                    st.session_state.page = "dashboard"
-
-                    st.rerun()
