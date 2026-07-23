@@ -9,7 +9,7 @@ from interview.evaluator import evaluate_answer
 from history.history_service import save_interview
 from utils.score_parser import extract_score
 from reports.pdf_report import generate_report
-
+from services.career_coach import generate_career_advice
 from streamlit_mic_recorder import speech_to_text
 
 def interview_page():
@@ -33,6 +33,14 @@ def interview_page():
     if "followup_question" not in st.session_state:
         st.session_state.followup_question = None
 
+    if "interview_questions" not in st.session_state:
+        st.session_state.interview_questions = []
+
+    if "interview_answers" not in st.session_state:
+        st.session_state.interview_answers = []
+
+    if "interview_evaluations" not in st.session_state:
+        st.session_state.interview_evaluations = []
     # -------------------------
     # Page Title
     # -------------------------
@@ -123,6 +131,12 @@ def interview_page():
         st.session_state.total_questions = question_count
         st.session_state.current_question = 1
         st.session_state.scores = []
+
+        st.session_state.interview_questions = []
+
+        st.session_state.interview_answers = []
+
+        st.session_state.interview_evaluations = []
 
         question = generate_question(
             role,
@@ -245,6 +259,18 @@ def interview_page():
 
                 st.session_state.scores.append(
                     score
+                )
+
+                st.session_state.interview_questions.append(
+                    st.session_state.question
+                )
+
+                st.session_state.interview_answers.append(
+                    answer
+                )
+
+                st.session_state.interview_evaluations.append(
+                    result
                 )
 
                 save_interview(
@@ -431,6 +457,8 @@ def interview_page():
                         else 0
                     )
 
+                    st.session_state.average_score = average
+
                     st.metric(
                         "⭐ Final Average Score",
                         f"{average:.1f}/10"
@@ -438,11 +466,50 @@ def interview_page():
 
                     st.divider()
 
-                    # -------------------------
-                    # Generate PDF Report
-                    # -------------------------
+                # -------------------------
+                # AI Career Coach
+                # -------------------------
 
-                    if st.button(
+                if st.button(
+                    "🤖 Get AI Career Advice",
+                    use_container_width=True
+                ):
+
+                    with st.spinner(
+                        "🤖 AI Career Coach is analyzing your interview..."
+                    ):
+
+                        career_advice = generate_career_advice(
+                            role=role,
+                            company=company,
+                            difficulty=difficulty,
+                            questions=st.session_state.interview_questions,
+                            answers=st.session_state.interview_answers,
+                            evaluations=st.session_state.interview_evaluations,
+                            scores=st.session_state.scores
+                        )
+
+                    st.session_state.career_advice = career_advice
+
+                if "career_advice" in st.session_state:
+
+                    st.divider()
+
+                    st.subheader(
+                        "🤖 AI Career Coach"
+                    )
+
+                    st.markdown(
+                        st.session_state.career_advice
+                    )
+
+                st.divider()
+
+                # -------------------------
+                # Generate PDF Report
+                # -------------------------
+
+                if st.button(
                         "📄 Generate PDF Report",
                         use_container_width=True
                     ):
@@ -450,25 +517,51 @@ def interview_page():
                         filename = "Interview_Report.pdf"
 
                         generate_report(
-                            filename=filename,
-                            user=st.session_state.user["name"],
-                            role=st.session_state.last_role,
-                            difficulty=st.session_state.last_difficulty,
-                            company=company,
-                            question=st.session_state.question,
-                            answer=st.session_state.candidate_answer,
-                            evaluation=st.session_state.last_evaluation,
-                            overall_score=average,
-                            followup_question=st.session_state.followup_question,
-                            followup_answer=st.session_state.get(
-                                "followup_answer",
-                                "Not Available"
-                            ),
-                            followup_evaluation=st.session_state.get(
-                                "followup_evaluation",
-                                "Not Available"
-                            )
+                        filename=filename,
+                        user=st.session_state.user["name"],
+                        role=st.session_state.last_role,
+                        difficulty=st.session_state.last_difficulty,
+                        company=company,
+                        question=st.session_state.question,
+                        answer=answer,
+                        evaluation=st.session_state.last_evaluation,
+                        overall_score=st.session_state.get(
+                            "average_score",
+                            0
+                        ),
+                        followup_question=st.session_state.get(
+                            "followup_question",
+                            "Not Available"
+                        ),
+                        followup_answer=st.session_state.get(
+                            "followup_answer",
+                            "Not Available"
+                        ),
+                        followup_evaluation=st.session_state.get(
+                            "followup_evaluation",
+                            "Not Available"
+                        ),
+                        career_advice=st.session_state.get(
+                            "career_advice",
+                            "Not Available"
+                        ),
+                        interview_questions=st.session_state.get(
+                            "interview_questions",
+                            []
+                        ),
+                        interview_answers=st.session_state.get(
+                            "interview_answers",
+                            []
+                        ),
+                        interview_evaluations=st.session_state.get(
+                            "interview_evaluations",
+                            []
+                        ),
+                        scores=st.session_state.get(
+                            "scores",
+                            []
                         )
+                    )
 
                         st.success(
                             "✅ PDF report generated successfully!"
@@ -491,7 +584,7 @@ def interview_page():
                     # Finish Interview
                     # -------------------------
 
-                    if st.button(
+                if st.button(
                         "🏠 Finish Interview",
                         use_container_width=True
                     ):
