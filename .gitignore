@@ -1,21 +1,25 @@
-# Environment
+# Environment variables
 .env
-venv/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Virtual environment
+venv/
+.venv/
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
 
-# VS Code
+# Local database
+database/interview.db
+
+# Generated reports
+*.pdf
+
+# IDE
 .vscode/
-
-# Logs
-logs/
-
-# Uploads (optional if you don't want uploaded resumes in Git)
-uploads/
+.idea/
 
 Interview_Report.pdf
