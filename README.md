@@ -12,29 +12,25 @@ An AI-powered mock interview platform that helps candidates practice interviews,
 
 ### 🏠 Dashboard
 
-![Dashboard](screenshots/dashboard.png)
+![login-page](screenshots/login.png)
+
+### 🏠 Dashboard
+
+![Dashboard](screenshots/dashboard#1.png)
+
+![dashboard](screenshots/dashboard#2.png)
 
 ### 🎤 AI Mock Interview
 
-![Mock Interview](screenshots/mock-interview.png)
+![Mock Interview](screenshots/interview#1.png)
 
 ### 📊 AI Evaluation
 
-![AI Evaluation](screenshots/evaluation.png)
+![AI Evaluation](screenshots/interview#2.png)
 
 ### 📄 Resume ATS Analyzer
 
 ![Resume Analyzer](screenshots/resume-analyzer.png)
-
-### 📜 Interview History
-
-![Interview History](screenshots/interview-history.png)
-
-### 📈 Performance Analytics
-
-![Analytics](screenshots/analytics.png)
-
----
 
 ## ✨ Features
 
