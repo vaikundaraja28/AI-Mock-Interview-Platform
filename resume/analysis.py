@@ -1,36 +1,116 @@
-import streamlit as st
+import re
 
 from services.gemini_service import ask_gemini
 
 
-def analyze_resume(text):
+def extract_ats_score(text):
+    """
+    Extract ATS score from AI response.
+
+    Supports formats such as:
+    ATS Score: 85
+    ATS Score: 85/100
+    ATS Score - 85
+    ATS Score = 85
+    """
+
+    if not text:
+        return None
+
+    patterns = [
+        r"ATS\s*SCORE\s*[:\-=\s]+\**\s*(\d{1,3})\s*(?:/100)?",
+        r"ATS\s*Compatibility\s*Score\s*[:\-=\s]+\**\s*(\d{1,3})\s*(?:/100)?",
+        r"Overall\s*ATS\s*Score\s*[:\-=\s]+\**\s*(\d{1,3})\s*(?:/100)?",
+        r"ATS\s*Rating\s*[:\-=\s]+\**\s*(\d{1,3})\s*(?:/100)?",
+    ]
+
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            score = int(match.group(1))
+
+            if 0 <= score <= 100:
+                return score
+
+    return None
+
+
+def analyze_resume(resume_text):
 
     prompt = f"""
-You are an expert HR recruiter.
+You are an expert ATS resume analyzer and professional technical recruiter.
 
-Analyze this resume.
+Analyze the following resume.
 
-Return:
+IMPORTANT:
+Your response MUST start with the ATS score in EXACTLY this format:
 
-1. Summary
+ATS Score: XX/100
 
-2. Skills
+Replace XX with a number between 0 and 100.
 
-3. Strengths
+Then provide the complete analysis using the following structure:
 
-4. Weaknesses
+## ATS Score
+ATS Score: XX/100
 
-5. Missing Skills
+## Overall Assessment
+Give a short professional summary.
 
-6. ATS Score (/100)
+## Key Strengths
+- Strength 1
+- Strength 2
+- Strength 3
+
+## Missing Skills
+- Skill 1
+- Skill 2
+- Skill 3
+
+## Resume Improvements
+- Improvement 1
+- Improvement 2
+- Improvement 3
+
+## ATS Keywords
+List important keywords that should be included.
+
+## Recommended Job Roles
+List suitable job roles based on the resume.
+
+## Final Recommendations
+Give practical steps to improve the resume and ATS compatibility.
 
 Resume:
 
-{text}
+{resume_text}
 """
 
-    with st.spinner("Analyzing Resume..."):
+    try:
 
         result = ask_gemini(prompt)
 
-    st.markdown(result)
+        if not result:
+            return "ERROR: AI returned an empty response."
+
+        # Extract ATS score
+        ats_score = extract_ats_score(result)
+
+        # Save complete analysis
+        import streamlit as st
+
+        st.session_state.resume_analysis = result
+        st.session_state.ats_score = ats_score
+
+        return result
+
+    except Exception as e:
+
+        return f"ERROR: {str(e)}"
