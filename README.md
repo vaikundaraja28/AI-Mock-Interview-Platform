@@ -18,8 +18,6 @@ An AI-powered mock interview platform that helps candidates practice interviews,
 
 ![Dashboard](screenshots/dashboard#1.png)
 
-![dashboard](screenshots/dashboard#2.png)
-
 ### 🎤 AI Mock Interview
 
 ![Mock Interview](screenshots/interview#1.png)
